@@ -553,38 +553,56 @@ function create() {
 
   loadMemo();
   fetchStatus();
-  // 先强制加一个测试用的尼卡 agent 渲染
-  const testNika = {
-    agentId: 'agent_nika',
-    name: '尼卡',
-    isMain: false,
-    state: 'writing',
-    detail: '在画像素画...',
-    area: 'writing',
-    authStatus: 'approved',
-    updated_at: new Date().toISOString()
-  };
-  renderAgent(testNika);
   fetchAgents();
 
-  // 测试用：让尼卡模拟走来走去
-  window.testNikaState = 'writing';
-  window.testNikaTimer = setInterval(() => {
-    const states = ['idle', 'writing', 'researching', 'executing'];
-    const areas = { idle: 'breakroom', writing: 'writing', researching: 'writing', executing: 'writing' };
-    window.testNikaState = states[Math.floor(Math.random() * states.length)];
-    const testAgent = {
+  // 可选调试：仅在显式开启 debug 模式时渲染测试用尼卡 agent
+  let debugAgents = false;
+  try {
+    if (typeof window !== 'undefined') {
+      if (window.STAR_OFFICE_DEBUG_AGENTS === true) {
+        debugAgents = true;
+      } else if (window.location && window.location.search && typeof URLSearchParams !== 'undefined') {
+        const sp = new URLSearchParams(window.location.search);
+        if (sp.get('debugAgents') === '1') {
+          debugAgents = true;
+        }
+      }
+    }
+  } catch (e) {
+    debugAgents = false;
+  }
+
+  if (debugAgents) {
+    const testNika = {
       agentId: 'agent_nika',
       name: '尼卡',
       isMain: false,
-      state: window.testNikaState,
+      state: 'writing',
       detail: '在画像素画...',
-      area: areas[window.testNikaState],
+      area: 'writing',
       authStatus: 'approved',
       updated_at: new Date().toISOString()
     };
-    renderAgent(testAgent);
-  }, 5000);
+    renderAgent(testNika);
+
+    window.testNikaState = 'writing';
+    window.testNikaTimer = setInterval(() => {
+      const states = ['idle', 'writing', 'researching', 'executing'];
+      const areas = { idle: 'breakroom', writing: 'writing', researching: 'writing', executing: 'writing' };
+      window.testNikaState = states[Math.floor(Math.random() * states.length)];
+      const testAgent = {
+        agentId: 'agent_nika',
+        name: '尼卡',
+        isMain: false,
+        state: window.testNikaState,
+        detail: '在画像素画...',
+        area: areas[window.testNikaState],
+        authStatus: 'approved',
+        updated_at: new Date().toISOString()
+      };
+      renderAgent(testAgent);
+    }, 5000);
+  }
 }
 
 function update(time) {
