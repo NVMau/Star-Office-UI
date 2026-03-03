@@ -1377,7 +1377,11 @@ def assets_auth():
 
 @app.route("/assets/auth/status", methods=["GET"])
 def assets_auth_status():
-    return jsonify({"ok": True, "authed": _is_asset_editor_authed()})
+    return jsonify({
+        "ok": True,
+        "authed": _is_asset_editor_authed(),
+        "drawer_default_pass": ASSET_DRAWER_PASS_DEFAULT == "1234",
+    })
 
 
 @app.route("/assets/positions", methods=["GET"])
@@ -1497,6 +1501,72 @@ def gemini_config_set():
         return jsonify({"ok": False, "msg": str(e)}), 500
 
 
+@app.route("/assets/restore-default", methods=["POST"])
+def assets_restore_default():
+    guard = _require_asset_editor_auth()
+    if guard:
+        return guard
+    try:
+        data = request.get_json(silent=True) or {}
+        rel_path = (data.get("path") or "").strip().lstrip("/")
+        if not rel_path:
+            return jsonify({"ok": False, "msg": "缺少 path"}), 400
+
+        target = (FRONTEND_PATH / rel_path).resolve()
+        try:
+            target.relative_to(FRONTEND_PATH.resolve())
+        except Exception:
+            return jsonify({"ok": False, "msg": "非法 path"}), 400
+
+        if not target.exists():
+            return jsonify({"ok": False, "msg": "目标文件不存在"}), 404
+
+        root, ext = os.path.splitext(str(target))
+        default_path = root + ext + ".default"
+        if not os.path.exists(default_path):
+            return jsonify({"ok": False, "msg": "未找到默认资产快照"}), 404
+
+        # 回滚前保留上一版
+        bak = str(target) + ".bak"
+        if os.path.exists(str(target)):
+            shutil.copy2(str(target), bak)
+
+        shutil.copy2(default_path, str(target))
+        st = os.stat(str(target))
+        return jsonify({"ok": True, "path": rel_path, "size": st.st_size, "msg": "已重置为默认资产"})
+    except Exception as e:
+        return jsonify({"ok": False, "msg": str(e)}), 500
+
+
+@app.route("/assets/restore-prev", methods=["POST"])
+def assets_restore_prev():
+    guard = _require_asset_editor_auth()
+    if guard:
+        return guard
+    try:
+        data = request.get_json(silent=True) or {}
+        rel_path = (data.get("path") or "").strip().lstrip("/")
+        if not rel_path:
+            return jsonify({"ok": False, "msg": "缺少 path"}), 400
+
+        target = (FRONTEND_PATH / rel_path).resolve()
+        try:
+            target.relative_to(FRONTEND_PATH.resolve())
+        except Exception:
+            return jsonify({"ok": False, "msg": "非法 path"}), 400
+
+        bak = str(target) + ".bak"
+        if not os.path.exists(bak):
+            return jsonify({"ok": False, "msg": "未找到上一版备份"}), 404
+
+        shutil.copy2(str(target), bak + ".tmp") if os.path.exists(str(target)) else None
+        shutil.copy2(bak, str(target))
+        st = os.stat(str(target))
+        return jsonify({"ok": True, "path": rel_path, "size": st.st_size, "msg": "已回退到上一版"})
+    except Exception as e:
+        return jsonify({"ok": False, "msg": str(e)}), 500
+
+
 @app.route("/assets/upload", methods=["POST"])
 def assets_upload():
     guard = _require_asset_editor_auth()
@@ -1523,6 +1593,15 @@ def assets_upload():
             return jsonify({"ok": False, "msg": "目标文件不存在，请先从 /assets/list 选择 path"}), 404
 
         target.parent.mkdir(parents=True, exist_ok=True)
+
+        # 首次上传前固化默认资产快照，供“重置为默认资产”使用
+        default_snap = Path(str(target) + ".default")
+        if not default_snap.exists():
+            try:
+                shutil.copy2(target, default_snap)
+            except Exception:
+                pass
+
         if backup:
             bak = target.with_suffix(target.suffix + ".bak")
             shutil.copy2(target, bak)
