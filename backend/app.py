@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Star Office UI - Backend State Service"""
 
-from flask import Flask, jsonify, send_from_directory, make_response, request, session
+from flask import Flask, jsonify, send_from_directory, make_response, request, session, g
 from werkzeug.exceptions import RequestEntityTooLarge
 from datetime import datetime, timedelta
 import json
@@ -14,6 +14,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import uuid
 from pathlib import Path
 from security_utils import (
     is_production_mode,
@@ -132,6 +133,10 @@ BG_GENERATE_LOCK = threading.Lock()
 GEMINI_SUBPROCESS_TIMEOUT_SECONDS = int(os.getenv("STAR_OFFICE_GEMINI_TIMEOUT_SECONDS", "240"))
 GEMINI_PROMPT_MAX_CHARS = int(os.getenv("STAR_OFFICE_GEMINI_PROMPT_MAX_CHARS", "1200"))
 
+# Optional request logging (off by default, no behavior change)
+REQUEST_LOG_ENABLED = feature_enabled("STAR_OFFICE_REQUEST_LOG_ENABLED", default=False)
+REQUEST_LOG_PATH = os.getenv("STAR_OFFICE_REQUEST_LOG_PATH", os.path.join(ROOT_DIR, "request.log"))
+
 if is_production_mode():
     hardening_errors = []
     if not is_strong_secret(str(app.secret_key)):
@@ -157,6 +162,26 @@ def _extract_bearer_token() -> str:
     if not h.lower().startswith("bearer "):
         return ""
     return h[7:].strip()
+
+
+def _mask_sensitive(value: str, keep: int = 4) -> str:
+    s = (value or "").strip()
+    if not s:
+        return ""
+    if len(s) <= keep:
+        return "*" * len(s)
+    return ("*" * (len(s) - keep)) + s[-keep:]
+
+
+def _append_request_log_line(payload: dict):
+    try:
+        line = json.dumps(payload, ensure_ascii=False)
+        parent = os.path.dirname(os.path.abspath(REQUEST_LOG_PATH)) or "."
+        os.makedirs(parent, exist_ok=True)
+        with open(REQUEST_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
 
 
 def _write_api_auth_ok() -> bool:
@@ -215,6 +240,10 @@ def _check_rate_limit(path: str) -> tuple[bool, int]:
 
 @app.before_request
 def enforce_write_api_auth_if_enabled():
+    # Request context baseline (for optional logging)
+    g.request_id = str(uuid.uuid4())
+    g.request_started_at = time.time()
+
     if request.method != "POST":
         return None
     if request.path not in PROTECTED_WRITE_PATHS:
@@ -256,6 +285,32 @@ def add_no_cache_headers(response):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
+
+    # Optional request log (redacted)
+    if REQUEST_LOG_ENABLED:
+        try:
+            elapsed_ms = int((time.time() - float(getattr(g, "request_started_at", time.time()))) * 1000)
+        except Exception:
+            elapsed_ms = -1
+
+        ua = (request.headers.get("User-Agent") or "")[:180]
+        auth_header = (request.headers.get("Authorization") or "").strip()
+        auth_masked = ""
+        if auth_header.lower().startswith("bearer "):
+            auth_masked = "Bearer " + _mask_sensitive(auth_header[7:].strip(), keep=4)
+
+        _append_request_log_line({
+            "ts": datetime.now().isoformat(timespec="seconds"),
+            "request_id": getattr(g, "request_id", ""),
+            "ip": _client_ip(),
+            "method": request.method,
+            "path": path,
+            "status": int(getattr(response, "status_code", 0) or 0),
+            "duration_ms": elapsed_ms,
+            "ua": ua,
+            "auth": auth_masked,
+        })
+
     return response
 
 # Default state

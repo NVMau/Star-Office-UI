@@ -88,6 +88,8 @@ def main() -> int:
     asset_read_auth_enabled = (os.getenv("STAR_OFFICE_ASSET_READ_AUTH_ENABLED") or "").strip().lower() in {"1", "true", "yes", "on"}
     gemini_timeout_raw = (os.getenv("STAR_OFFICE_GEMINI_TIMEOUT_SECONDS") or "240").strip()
     gemini_prompt_max_raw = (os.getenv("STAR_OFFICE_GEMINI_PROMPT_MAX_CHARS") or "1200").strip()
+    request_log_enabled = (os.getenv("STAR_OFFICE_REQUEST_LOG_ENABLED") or "").strip().lower() in {"1", "true", "yes", "on"}
+    request_log_path = (os.getenv("STAR_OFFICE_REQUEST_LOG_PATH") or "").strip()
 
     if in_prod:
         if not is_strong_secret(secret):
@@ -142,6 +144,11 @@ def main() -> int:
             warnings.append("STAR_OFFICE_GEMINI_PROMPT_MAX_CHARS is very high (>10000), consider lowering")
     except Exception:
         failures.append("STAR_OFFICE_GEMINI_PROMPT_MAX_CHARS is invalid (must be integer)")
+
+    if request_log_enabled and request_log_path:
+        low = request_log_path.lower()
+        if any(x in low for x in [".ssh", ".gnupg", ".aws"]):
+            failures.append("STAR_OFFICE_REQUEST_LOG_PATH points to a sensitive directory")
 
     tracked = tracked_files()
     risky_tracked = [
