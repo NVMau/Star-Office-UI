@@ -1162,10 +1162,10 @@
         <div id="control-bar">
             <div id="control-bar-title">Star 状态</div>
             <div id="control-buttons">
-                <button id="btn-state-idle" onclick="setState('idle','待命')">待命</button>
-                <button id="btn-state-writing" onclick="setState('writing','工作中')">工作</button>
-                <button id="btn-state-syncing" onclick="setState('syncing','同步中')">同步</button>
-                <button id="btn-state-error" onclick="setState('error','报警中')">报警</button>
+                <button id="btn-state-idle" onclick="setState('idle',t('btnIdle'))">待命</button>
+                <button id="btn-state-writing" onclick="setState('writing',t('btnWork'))">工作</button>
+                <button id="btn-state-syncing" onclick="setState('syncing',t('btnSync'))">同步</button>
+                <button id="btn-state-error" onclick="setState('error',t('btnError'))">报警</button>
                 <button id="btn-open-drawer" onclick="toggleAssetDrawer()">装修房间</button>
             </div>
         </div>
@@ -4766,7 +4766,12 @@ function toggleBrokerPanel() {
                         const stateInfo = STATES[nextState] || STATES.idle;
                         // If we're mid-transition, don't restart the path every poll
                         const changed = (pendingDesiredState === null) && (nextState !== currentState);
-                        const nextLine = '[' + stateInfo.name + '] ' + (data.detail || '...');
+                        const _stateLabels = { zh:{idle:'待命',writing:'工作',researching:'调研',executing:'执行',syncing:'同步',error:'报警'}, en:{idle:'Idle',writing:'Working',researching:'Researching',executing:'Executing',syncing:'Syncing',error:'Alert'}, ja:{idle:'待機',writing:'作業',researching:'調査',executing:'実行',syncing:'同期',error:'警報'}, vi:{idle:'Chờ',writing:'Đang làm',researching:'Nghiên cứu',executing:'Thực thi',syncing:'Đồng bộ',error:'Lỗi'} };
+                        const _autoIdleLabels = { zh:'待命中（自动回到休息区）', en:'Idle (auto-returned to break area)', ja:'待機中（休憩エリアへ自動移動）', vi:'Đang chờ (tự về khu nghỉ ngơi)' };
+                        const _stateLabel = (_stateLabels[uiLang] || _stateLabels.en)[nextState] || nextState;
+                        const _rawDetail = data.detail || '...';
+                        const _detail = _rawDetail === '__auto_idle__' ? (_autoIdleLabels[uiLang] || _autoIdleLabels.en) : _rawDetail;
+                        const nextLine = '[' + _stateLabel + '] ' + _detail;
                         // 不论 changed 与否，都按服务端最新状态强制一次视觉同步，避免动画卡旧状态
                         pendingDesiredState = null;
                         if (currentState !== nextState) {
@@ -4787,13 +4792,15 @@ function toggleBrokerPanel() {
                         }
                     } catch (err) {
                         console.error('fetchStatus apply error', err);
-                        typewriterTarget = '状态更新异常，正在恢复...';
+                        const _errMsg = { zh:'状态更新异常，正在恢复...', en:'State update error, recovering...', ja:'状態更新エラー、回復中...', vi:'Lỗi cập nhật trạng thái, đang phục hồi...' };
+                        typewriterTarget = _errMsg[uiLang] || _errMsg.en;
                         typewriterText = '';
                         typewriterIndex = 0;
                     }
                 })
                 .catch(error => {
-                    typewriterTarget = '连接失败，正在重试...';
+                    const _connMsg = { zh:'连接失败，正在重试...', en:'Connection failed, retrying...', ja:'接続失敗、再試行中...', vi:'Kết nối thất bại, đang thử lại...' };
+                    typewriterTarget = _connMsg[uiLang] || _connMsg.en;
                     typewriterText = '';
                     typewriterIndex = 0;
                 });
