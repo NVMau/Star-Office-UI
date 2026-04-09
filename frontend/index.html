@@ -1589,11 +1589,13 @@
                     memoDate.textContent = data.date || '';
                     memoContent.innerHTML = data.memo.replace(/\n/g, '<br>');
                 } else {
-                    memoContent.innerHTML = '<div id="memo-placeholder">暂无昨日日记</div>';
+                    const noMemoText = { zh: '暂无昨日日记', en: 'No diary from yesterday.', ja: '昨日の日記はありません。', vi: 'Chưa có nhật ký hôm qua.' };
+                    memoContent.innerHTML = `<div id="memo-placeholder">${noMemoText[uiLang] || noMemoText.en}</div>`;
                 }
             } catch (e) {
-                console.error('加载 memo 失败:', e);
-                memoContent.innerHTML = '<div id="memo-placeholder">加载失败</div>';
+                console.error('loadMemo error:', e);
+                const loadErrText = { zh: '加载失败', en: 'Load failed.', ja: '読み込み失敗', vi: 'Tải thất bại.' };
+                memoContent.innerHTML = `<div id="memo-placeholder">${loadErrText[uiLang] || loadErrText.en}</div>`;
             }
         }
 
@@ -1678,6 +1680,15 @@
                 syncing: ['同期中：今日をクラウドに封印。','バックアップは儀式じゃなく安心。','書き込み中…電源オフ厳禁。','変更はタイムスタンプへ。','クラウド整列：カチッ。','同期完了まで触らないで。','未来の自分を災害から救う。','バックアップ一つ、後悔一つ減る。'],
                 error: ['警報：まず落ち着いて。','バグの気配を感じる。','再現してから修正へ。','ログをください、人語にします。','エラーは敵ではなく手がかり。','まず影響範囲を囲う。','止血してから手術。','今すぐ根因を追跡中。','大丈夫、よくある案件。','警戒モード：問題を可視化する。'],
                 cat: ['ニャー','ゴロゴロ…','しっぽフリフリ。','ひなたぼっこ最高。','見に来てくれた！','このオフィスのマスコットです。','ぐーっと伸び。','今日のおやつ、準備できた？','ゴロゴロ。','ここ、いちばん見晴らしがいい。']
+            },
+            vi: {
+                idle: ['Sẵn sàng: tai đã dựng lên.','Tôi đây, sẵn sàng làm việc.','Dọn bàn trước đã.','Thở thư giãn một chút.','Hôm nay cũng hiệu quả và phong cách.','Chờ đợi để ra đòn chính xác hơn.','Cà phê còn nóng, cảm hứng cũng vậy.','Đang buff cho bạn âm thầm.','Trạng thái: tĩnh tâm / nạp pin.','Mèo nói: từ từ cũng ổn thôi.'],
+                writing: ['Chế độ tập trung: đừng làm phiền.','Trước tiên hãy thông đường tới hạn.','Tôi sẽ biến phức tạp thành đơn giản.','Nhốt bug vào lồng.','Viết nửa chừng thì lưu đã.','Mỗi bước đều phải rollback được.','Tiến độ hôm nay là sự tự tin ngày mai.','Hội tụ trước, phân kỳ sau.','Làm hệ thống dễ giải thích hơn.','Bình tĩnh — ta có thể thắng.'],
+                researching: ['Đang đào chuỗi bằng chứng.','Để tôi cô đặc thông tin thành kết luận.','Tìm ra rồi: chìa khóa ở đây.','Kiểm soát biến số trước.','Đang kiểm tra tại sao chuyện này xảy ra.','Biến trực giác thành kiểm chứng.','Xác định trước, tối ưu sau.','Không vội — vẽ sơ đồ nhân quả trước.'],
+                executing: ['Đang thực thi — đừng chớp mắt.','Chia nhỏ task, đánh từng cái.','Pipeline đang chạy.','Một click tiến lên: đi thôi.','Để kết quả tự nói.','MVP trước, rồi mới làm đẹp.'],
+                syncing: ['Đồng bộ: khóa hôm nay lên cloud.','Backup là an toàn, không phải nghi lễ.','Đang ghi… đừng cúp điện.','Giao thay đổi cho timestamp.','Cloud đồng bộ: click.','Đừng động vào trước khi đồng bộ xong.','Cứu tương lai mình khỏi thảm họa.','Thêm một bản backup, bớt một hối tiếc.'],
+                error: ['Báo động — bình tĩnh đã.','Tôi ngửi thấy mùi bug.','Tái hiện trước, rồi mới sửa.','Đưa log cho tôi, tôi sẽ dịch.','Lỗi là manh mối, không phải kẻ thù.','Khoanh vùng ảnh hưởng trước.','Cầm máu trước, phẫu thuật sau.','Đang truy tìm nguyên nhân gốc.','Đừng lo, tôi gặp cái này nhiều rồi.','Chế độ cảnh báo: để vấn đề tự lộ diện.'],
+                cat: ['Meo~','Gừ gừ…','Vẫy đuôi cái nào.','Tắm nắng thích lắm.','Có người đến thăm tôi rồi!','Tôi là linh vật văn phòng này.','Vươn vai cái nào~','Đồ ăn hôm nay đã sẵn chưa?','Gừ gừ gừ…','Góc này nhìn đẹp nhất.']
             }
         };
 
@@ -3940,7 +3951,8 @@ function toggleBrokerPanel() {
                                     const welcomeTexts = {
                                         zh: [`欢迎 ${newAgent.name} 来到办公室～`,`Hi ${newAgent.name}，一起开工吧`,`${newAgent.name} 已加入，欢迎！`],
                                         en: [`Welcome ${newAgent.name} to the office!`,`Hi ${newAgent.name}, let’s build something.`,`${newAgent.name} just joined — welcome!`],
-                                        ja: [`${newAgent.name} さん、オフィスへようこそ！`,`Hi ${newAgent.name}、一緒に進めよう。`,`${newAgent.name} さんが参加しました、歓迎！`]
+                                        ja: [`${newAgent.name} さん、オフィスへようこそ！`,`Hi ${newAgent.name}、一緒に進めよう。`,`${newAgent.name} さんが参加しました、歓迎！`],
+                                        vi: [`Chào mừng ${newAgent.name} đến văn phòng!`,`Hi ${newAgent.name}, cùng bắt tay vào làm thôi.`,`${newAgent.name} đã tham gia — chào mừng!`]
                                     };
                                     const langPack = BUBBLE_TEXTS[lang] || BUBBLE_TEXTS.zh;
                                     const oldTexts = Array.isArray(langPack.writing) ? [...langPack.writing] : [];
@@ -4439,8 +4451,16 @@ function toggleBrokerPanel() {
                 }
                 game.input.setDefaultCursor(on ? 'grab' : 'default');
                 if (isTouchDevice && statusText) {
-                    const info = on ? '视野拖动已开启（可左右拖动画布）' : '视野拖动已关闭（点击左上角“移动视野”可开启）';
-                    statusText.textContent = `状态：[${(STATES[currentState] && STATES[currentState].name) || '待命'}] ${info}`;
+                    const panInfo = {
+                        zh: { on: '视野拖动已开启（可左右拖动画布）', off: '视野拖动已关闭（点击左上角”移动视野”可开启）' },
+                        en: { on: 'Pan enabled (drag canvas left/right).', off: 'Pan disabled (tap “Pan View” top-left to enable).' },
+                        ja: { on: 'パン有効（画面を左右にドラッグ可）', off: 'パン無効（左上の「視点移動」をタップ）' },
+                        vi: { on: 'Đã bật kéo màn hình (vuốt trái/phải).', off: 'Đã tắt kéo màn hình (nhấn “Di chuyển” góc trên trái).' }
+                    };
+                    const stateNames = { zh: { idle:'待命',writing:'工作',researching:'调研',executing:'执行',syncing:'同步',error:'报警' }, en: { idle:'Idle',writing:'Working',researching:'Researching',executing:'Executing',syncing:'Syncing',error:'Alert' }, ja: { idle:'待機',writing:'作業',researching:'調査',executing:'実行',syncing:'同期',error:'警報' }, vi: { idle:'Chờ',writing:'Làm việc',researching:'Nghiên cứu',executing:'Thực thi',syncing:'Đồng bộ',error:'Lỗi' } };
+                    const pi = panInfo[uiLang] || panInfo.en;
+                    const sn = (stateNames[uiLang] || stateNames.en)[currentState] || currentState;
+                    statusText.textContent = `[${sn}] ${on ? pi.on : pi.off}`;
                 }
             }
 
