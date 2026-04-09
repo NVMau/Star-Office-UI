@@ -211,7 +211,7 @@ def get_office_name_from_identity():
         m = re.search(r"-\s*\*\*Name:\*\*\s*(.+)", content)
         if m:
             name = m.group(1).strip().replace("\r", "").split("\n")[0].strip()
-            return f"{name}的办公室" if name else None
+            return f"Văn phòng {name}" if name else None
     except Exception:
         pass
     return None

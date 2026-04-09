@@ -1282,6 +1282,7 @@
         移动视野
     </button>
     <div id="lang-toggle-group" style="position:fixed; top:calc(env(safe-area-inset-top, 0px) + 52px); left:12px; z-index:1000002; display:flex; gap:2px; align-items:center;">
+        <button id="lang-btn-vi" onclick="setUILanguage('vi')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">VI</button>
         <button id="lang-btn-en" onclick="setUILanguage('en')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">EN</button>
         <button id="lang-btn-jp" onclick="setUILanguage('ja')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">JP</button>
         <button id="lang-btn-cn" onclick="setUILanguage('zh')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">CN</button>
@@ -1290,7 +1291,7 @@
     <script src="/static/vendor/phaser-3.80.1.min.js?v={{VERSION_TIMESTAMP}}"></script>
     <script>
         // 简易中英文切换
-        let uiLang = localStorage.getItem('uiLang') || 'en';
+        let uiLang = localStorage.getItem('uiLang') || 'vi';
         const I18N = {
             zh: {
                 controlTitle: 'Star 状态',
@@ -1347,6 +1348,34 @@
                 showCoords: 'Show Coords', hideCoords: 'Hide Coords', moveView: 'Pan View', lockView: 'Lock View',
                 memoTitle: 'YESTERDAY NOTES', guestTitle: 'VISITOR LIST', officeTitle: 'Haixin Lobster Office',
                 loadingOffice: 'Loading Star’s pixel office...'
+            },
+            vi: {
+                controlTitle: 'Trạng thái',
+                btnIdle: 'Nghỉ', btnWork: 'Làm việc', btnSync: 'Đồng bộ', btnError: 'Lỗi', btnDecor: 'Trang trí',
+                drawerTitle: 'Trang trí · Quản lý tài nguyên', drawerClose: 'Đóng',
+                authTitle: 'Nhập mật khẩu trang trí', authPlaceholder: 'Nhập mật khẩu', authVerify: 'Xác nhận', authDefaultPassHint: 'Mật khẩu mặc định: 1234 (nên đổi thành mật khẩu mạnh hơn)',
+                drawerVisibilityTip: 'Hiển thị: nhấn biểu tượng mắt để ẩn/hiện từng tài nguyên',
+                hideDrawer: '👁 Ẩn thanh bên', showDrawer: '👁 Hiện thanh bên',
+                assetHide: 'Ẩn', assetShow: 'Hiện',
+                resetToDefault: 'Khôi phục mặc định', restorePrevAsset: 'Dùng bản trước',
+                btnMove: '📦 Nhà mới', btnHome: '🐚 Về nhà cũ', btnHomeLast: '↩️ Nhà trước', btnHomeFavorite: '⭐ Lưu nhà này', btnBroker: '🤝 Môi giới', btnDIY: '🪚 Tự trang trí', btnBrokerGo: 'Theo môi giới',
+                homeFavTitle: '🏠 Nhà đã lưu', homeFavEmpty: 'Chưa có nhà nào được lưu. Nhấn "⭐ Lưu nhà này" trước.', homeFavApply: 'Áp dụng vào bản đồ', homeFavDelete: 'Xóa', homeFavSaved: '✅ Đã lưu bản đồ hiện tại', homeFavApplied: '✅ Đã áp dụng nhà đã lưu', homeFavDeleted: '🗑️ Đã xóa nhà đã lưu',
+                brokerHint: 'Bạn muốn văn phòng theo phong cách gì?',
+                brokerPromptPh: 'Ví dụ: phong cách cổ điển, Monet, hầm ngục, cyberpunk...',
+                brokerNeedPrompt: 'Vui lòng nhập mô tả phong cách trước',
+                brokerGenerating: '🏘️ Đang tạo nền theo yêu cầu, vui lòng chờ (20-90 giây)...',
+                brokerDone: '✅ Đã tạo và thay nền thành công, đang làm mới phòng...',
+                moveSuccess: '✅ Chuyển nhà thành công!',
+                brokerMissingKey: '❌ Tạo ảnh thất bại: thiếu GEMINI API Key. Điền vào bên dưới và thử lại.',
+                geminiPanelTitle: '🔐 Cài đặt API (có thể thu gọn)', geminiHint: 'Tùy chọn: nhập API Key để dùng tính năng tạo ảnh (không ảnh hưởng tính năng cơ bản)', geminiApiDoc: '📘 Cách lấy Google API Key', geminiInputPh: 'Dán GEMINI_API_KEY (ẩn khi nhập)', geminiSaveKey: 'Lưu Key', geminiMaskNoKey: 'Hiện tại: chưa cấu hình Key', geminiMaskHasKey: 'Key đã cấu hình:',
+                speedModeLabel: 'Chế độ tạo ảnh', speedFast: '🍌2', speedQuality: '🍌Pro',
+                searchPlaceholder: 'Tìm tài nguyên (desk / sofa / star)', loaded: 'Đã tải', allAssets: 'Tất cả tài nguyên',
+                chooseImage: 'Tải lên tài nguyên', confirmUpload: 'Xác nhận & làm mới', resetToDefault: 'Đặt lại mặc định', restorePrevAsset: 'Khôi phục bản trước', uploadPending: 'Chờ tải lên', uploadTarget: 'Mục tiêu',
+                assetHintNotInScene: 'Đối tượng này chưa được phát hiện trong cảnh hiện tại; vẫn có thể thay file (hiệu lực sau khi làm mới)',
+                assetHintDefault: 'Tài nguyên chung: giữ nguyên kích thước, kênh alpha và điểm neo để tránh lệch vị trí',
+                showCoords: 'Hiện tọa độ', hideCoords: 'Ẩn tọa độ', moveView: 'Di chuyển màn hình', lockView: 'Khóa màn hình',
+                memoTitle: 'GHI CHÚ HÔM QUA', guestTitle: 'DANH SÁCH KHÁCH', officeTitle: 'Văn phòng AI',
+                loadingOffice: 'Đang tải văn phòng pixel...'
             },
             ja: {
                 controlTitle: 'Star ステータス',
@@ -1405,6 +1434,7 @@
             setText('btn-state-error', 'btnError');
             setText('btn-open-drawer', 'btnDecor');
             const langButtons = [
+                { id: 'lang-btn-vi', lang: 'vi' },
                 { id: 'lang-btn-en', lang: 'en' },
                 { id: 'lang-btn-jp', lang: 'ja' },
                 { id: 'lang-btn-cn', lang: 'zh' }
@@ -1476,7 +1506,7 @@
         }
 
         function setUILanguage(lang) {
-            if (!['zh', 'en', 'ja'].includes(lang)) return;
+            if (!['zh', 'en', 'ja', 'vi'].includes(lang)) return;
             uiLang = lang;
             localStorage.setItem('uiLang', uiLang);
             applyLanguage();
