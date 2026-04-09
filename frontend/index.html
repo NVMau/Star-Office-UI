@@ -3454,34 +3454,38 @@ function toggleBrokerPanel() {
 
             const visitors = getMergedVisitors();
             if (visitors.length === 0) {
-                list.innerHTML = '<div style="color:#9ca3af;font-size:12px;text-align:center;padding:20px 0;">暂无访客</div>';
+                const noVisitorText = { zh: '暂无访客', en: 'No visitors', ja: '访客なし', vi: 'Chưa có khách' };
+                list.innerHTML = `<div style="color:#9ca3af;font-size:12px;text-align:center;padding:20px 0;">${noVisitorText[uiLang] || noVisitorText.en}</div>`;
                 return;
             }
 
             list.innerHTML = visitors.map(agent => {
-                const name = agent.name || '未命名访客';
+                const unnamedText = { zh: '未命名访客', en: 'Visitor', ja: '訪客', vi: 'Khách' };
+                const name = agent.name || unnamedText[uiLang] || 'Visitor';
                 const authStatus = agent.authStatus || 'pending';
                 const state = agent.state || 'idle';
-                const statusMap = {
-                    approved: '已授权',
-                    pending: '待授权',
-                    rejected: '已拒绝',
-                    offline: '离线'
+                const statusMapByLang = {
+                    zh: { approved: '已授权', pending: '待授权', rejected: '已拒绝', offline: '离线' },
+                    en: { approved: 'Authorized', pending: 'Pending', rejected: 'Rejected', offline: 'Offline' },
+                    ja: { approved: '承認済', pending: '承認待ち', rejected: '拒否済', offline: 'オフライン' },
+                    vi: { approved: 'Đã duyệt', pending: 'Chờ duyệt', rejected: 'Từ chối', offline: 'Offline' }
                 };
-                const stateMap = {
-                    idle: '待命',
-                    writing: '工作',
-                    researching: '调研',
-                    executing: '执行',
-                    syncing: '同步',
-                    error: '报警'
+                const stateMapByLang = {
+                    zh: { idle: '待命', writing: '工作', researching: '调研', executing: '执行', syncing: '同步', error: '报警' },
+                    en: { idle: 'Idle', writing: 'Working', researching: 'Researching', executing: 'Executing', syncing: 'Syncing', error: 'Alert' },
+                    ja: { idle: '待機', writing: '作業中', researching: '調査中', executing: '実行中', syncing: '同期中', error: 'アラート' },
+                    vi: { idle: 'Chờ', writing: 'Đang làm', researching: 'Nghiên cứu', executing: 'Thực thi', syncing: 'Đồng bộ', error: 'Lỗi' }
                 };
+                const statusMap = statusMapByLang[uiLang] || statusMapByLang.en;
+                const stateMap = stateMapByLang[uiLang] || stateMapByLang.en;
 
                 const statusText = statusMap[authStatus] || authStatus;
                 const stateText = stateMap[state] || state;
                 const subtitle = `${statusText} · ${stateText}`;
 
-                const pendingActions = `<button onclick="alert('交换 skill 功能开发中')">交换skill</button><button class="leave-btn" onclick="leaveGuestAgent('${agent.agentId}','${name}')">离开房间</button>`;
+                const btnLabels = { zh: ['交换skill','离开房间'], en: ['Swap skill','Leave room'], ja: ['スキル交換','退室'], vi: ['Trao đổi','Rời phòng'] };
+                const [btnSwap, btnLeave] = btnLabels[uiLang] || btnLabels.en;
+                const pendingActions = `<button onclick="alert('${btnSwap}')">${btnSwap}</button><button class="leave-btn" onclick="leaveGuestAgent('${agent.agentId}','${name}')">${btnLeave}</button>`;
 
                 return `
                   <div class="guest-agent-item" data-name="${name}">
@@ -3715,14 +3719,41 @@ function toggleBrokerPanel() {
                 ? (window.__demoVisitors.find(v => v.agentId === id) || window.__demoVisitors.find(v => v.name === (g.nameText && g.nameText.text)))
                 : null;
 
-            const statusThoughtsMap = {
-                idle: ['我在休息区待命', '先放松一下，等下一步任务', '我在休息充电中'],
-                writing: ['我在工作区处理任务', '正在整理文档与执行中', '工作区专注推进中'],
-                researching: ['我在调研模式，搜集信息', '正在查资料和验证线索', '研究中，稍后同步结论'],
-                executing: ['执行中，正在跑流程', '我在工作区推进任务', '正在把计划落地执行'],
-                syncing: ['同步中，马上更新状态', '正在同步进度到系统', '数据同步中请稍候'],
-                error: ['我在 bug 区排查问题', '检测到异常，正在修复', '报警中，先定位再处理']
+            const statusThoughtsMapByLang = {
+                zh: {
+                    idle: ['我在休息区待命', '先放松一下，等下一步任务', '我在休息充电中'],
+                    writing: ['我在工作区处理任务', '正在整理文档与执行中', '工作区专注推进中'],
+                    researching: ['我在调研模式，搜集信息', '正在查资料和验证线索', '研究中，稍后同步结论'],
+                    executing: ['执行中，正在跑流程', '我在工作区推进任务', '正在把计划落地执行'],
+                    syncing: ['同步中，马上更新状态', '正在同步进度到系统', '数据同步中请稍候'],
+                    error: ['我在 bug 区排查问题', '检测到异常，正在修复', '报警中，先定位再处理']
+                },
+                en: {
+                    idle: ['Standing by in the lounge.', 'Taking a breather, awaiting next task.', 'Recharging in the break area.'],
+                    writing: ['Working through the task queue.', 'Drafting and executing now.', 'Focused at the work desk.'],
+                    researching: ['In research mode, gathering info.', 'Verifying sources and data.', 'Researching — will sync results soon.'],
+                    executing: ['Running the workflow now.', 'Pushing tasks forward.', 'Executing the plan step by step.'],
+                    syncing: ['Syncing status, just a moment.', 'Updating progress to the system.', 'Data sync in progress.'],
+                    error: ['Investigating the bug zone.', 'Anomaly detected, attempting fix.', 'On alert — locating the issue.']
+                },
+                ja: {
+                    idle: ['休憩エリアで待機中。', 'ひと息ついて次のタスクを待機。', '充電中です。'],
+                    writing: ['作業エリアでタスク処理中。', 'ドキュメント整理と実行中。', '集中して作業中。'],
+                    researching: ['調査モード、情報収集中。', '資料確認と検証中。', '研究中、あとで結果を共有します。'],
+                    executing: ['フロー実行中。', '作業エリアでタスク推進中。', '計画を実行に移しています。'],
+                    syncing: ['同期中、すぐ更新します。', 'システムに進捗を同期中。', 'データ同期中、しばらくお待ちを。'],
+                    error: ['バグエリアで問題調査中。', '異常を検知、修正中。', 'アラート中、問題を特定中。']
+                },
+                vi: {
+                    idle: ['Đang chờ ở khu nghỉ ngơi.', 'Thư giãn, chờ nhiệm vụ tiếp theo.', 'Đang nạp năng lượng.'],
+                    writing: ['Đang xử lý task ở khu làm việc.', 'Đang soạn thảo và thực thi.', 'Tập trung làm việc.'],
+                    researching: ['Đang ở chế độ nghiên cứu.', 'Đang tra cứu và xác minh dữ liệu.', 'Nghiên cứu xong sẽ báo cáo.'],
+                    executing: ['Đang chạy luồng xử lý.', 'Đang thúc đẩy task.', 'Đang triển khai kế hoạch.'],
+                    syncing: ['Đang đồng bộ trạng thái.', 'Đang cập nhật tiến độ.', 'Đồng bộ dữ liệu, chờ chút.'],
+                    error: ['Đang điều tra khu lỗi.', 'Phát hiện bất thường, đang sửa.', 'Cảnh báo — đang xác định vấn đề.']
+                }
             };
+            const statusThoughtsMap = statusThoughtsMapByLang[uiLang] || statusThoughtsMapByLang.en;
             const agentState = (guestAgents.find(a => a.agentId === id) || {}).state || 'idle';
             const thoughts = statusThoughtsMap[agentState] || statusThoughtsMap.idle;
             const text = (demoVisitor && demoVisitor.bubbleText) ? demoVisitor.bubbleText : thoughts[Math.floor(Math.random() * thoughts.length)];
@@ -3791,9 +3822,17 @@ function toggleBrokerPanel() {
                     executing: 'タスクを実行中です。',
                     syncing: '状態を同期中です。',
                     error: 'エラー発生！アラートエリアへ。'
+                },
+                vi: {
+                    idle: 'Nghỉ ngơi ở khu lounge.',
+                    writing: 'Đang làm việc.',
+                    researching: 'Đang nghiên cứu.',
+                    executing: 'Đang thực thi nhiệm vụ.',
+                    syncing: 'Đang đồng bộ trạng thái.',
+                    error: 'Có lỗi! Đến khu cảnh báo.'
                 }
             };
-            const bubbleTextMap = bubbleTextMapByLang[uiLang] || bubbleTextMapByLang.zh;
+            const bubbleTextMap = bubbleTextMapByLang[uiLang] || bubbleTextMapByLang.en;
 
             // 确保两位 demo 角色不会总是同一个状态（增加可观测性）
             const pickJs = (exclude) => {
