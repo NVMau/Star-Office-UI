@@ -1071,9 +1071,7 @@
 
             #coords-toggle,
             #pan-toggle,
-            #lang-btn-en,
-            #lang-btn-jp,
-            #lang-btn-cn {
+            #lang-btn-en {
                 font-size: 12px !important;
                 padding: 6px 8px !important;
             }
@@ -1284,8 +1282,6 @@
     <div id="lang-toggle-group" style="position:fixed; top:calc(env(safe-area-inset-top, 0px) + 52px); left:12px; z-index:1000002; display:flex; gap:2px; align-items:center;">
         <button id="lang-btn-vi" onclick="setUILanguage('vi')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">VI</button>
         <button id="lang-btn-en" onclick="setUILanguage('en')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">EN</button>
-        <button id="lang-btn-jp" onclick="setUILanguage('ja')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">JP</button>
-        <button id="lang-btn-cn" onclick="setUILanguage('zh')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">CN</button>
     </div>
 
     <script src="/static/vendor/phaser-3.80.1.min.js?v={{VERSION_TIMESTAMP}}"></script>
@@ -1435,9 +1431,7 @@
             setText('btn-open-drawer', 'btnDecor');
             const langButtons = [
                 { id: 'lang-btn-vi', lang: 'vi' },
-                { id: 'lang-btn-en', lang: 'en' },
-                { id: 'lang-btn-jp', lang: 'ja' },
-                { id: 'lang-btn-cn', lang: 'zh' }
+                { id: 'lang-btn-en', lang: 'en' }
             ];
             langButtons.forEach(({ id, lang }) => {
                 const el = document.getElementById(id);
@@ -1506,7 +1500,7 @@
         }
 
         function setUILanguage(lang) {
-            if (!['zh', 'en', 'ja', 'vi'].includes(lang)) return;
+            if (!['vi', 'en'].includes(lang)) return;
             uiLang = lang;
             localStorage.setItem('uiLang', uiLang);
             applyLanguage();
@@ -1840,7 +1834,7 @@
 
         function getAssetDisplayName(path) {
             const stem = toAssetStem(path);
-            const lang = (uiLang || 'zh');
+            const lang = (uiLang || 'vi');
             const nameMap = {
                 zh: {
                     'star-idle-v5': '主角·待命状态',
@@ -1915,7 +1909,7 @@
                     'guest_anim_6': '訪客アニメ 6'
                 }
             };
-            const langMap = nameMap[lang] || nameMap.zh;
+            const langMap = nameMap[lang] || nameMap.vi || nameMap.en;
             return langMap[stem] || stem;
         }
 
@@ -2023,7 +2017,7 @@
 
         function getAssetHelpText(path) {
             const stem = toAssetStem(path);
-            const lang = (uiLang || 'zh');
+            const lang = (uiLang || 'vi');
             const map = ASSET_HELP_TEXT_MAP[lang] || ASSET_HELP_TEXT_MAP.zh;
             return map[stem] || t('assetHintDefault');
         }
@@ -2830,24 +2824,24 @@ function toggleBrokerPanel() {
                     'Turning curiosity up to max…',
                     'Waiting for the journey to deliver the next door number…'
                 ],
-                ja: [
-                    '今日のひらめき荷物を梱包しています……',
-                    '次の目的地のデジタル座標を抽出しています……',
-                    '今回の漂流先を確認しています……',
-                    'オフィスを携帯モードに折りたたんでいます……',
-                    'ハサミに遠征 Buff を装着しています……',
-                    '次の創作区間の気候をマッチングしています……',
-                    '時差を冒険モードに切り替えています……',
-                    '見知らぬ街区の Wi‑Fi ハートビートを受信しています……',
-                    '次の目的地の潮風 BGM を試聴しています……',
-                    '「好きになるかもしれない」新しい部屋を読み込んでいます……',
-                    '未知のご近所さん向けに自己紹介を準備しています……',
-                    '次のデジタル海域をアンロックしています……',
-                    '好奇心を最大値まで上げています……',
-                    '旅が次の番地を届けるのを待っています……'
+                vi: [
+                    'Đang đóng gói hành lý cảm hứng hôm nay…',
+                    'Đang trích xuất tọa độ số cho trạm tiếp theo…',
+                    'Đang kiểm tra điểm đến của chuyến trôi dạt lần này…',
+                    'Đang gấp văn phòng thành chế độ di động…',
+                    'Đang trang bị Buff viễn chinh cho đôi càng…',
+                    'Đang ghép khí hậu sáng tạo cho chương tiếp theo…',
+                    'Đang chuyển múi giờ sang chế độ phiêu lưu…',
+                    'Đang nhận nhịp tim Wi‑Fi từ khu phố lạ…',
+                    'Đang xem thử BGM gió biển của trạm kế tiếp…',
+                    'Đang tải căn phòng mới bạn có thể sẽ yêu thích…',
+                    'Đang chuẩn bị lời giới thiệu cho hàng xóm chưa quen…',
+                    'Đang mở khóa vùng biển số tiếp theo…',
+                    'Đang vặn tò mò lên mức tối đa…',
+                    'Đang chờ hành trình giao tấm biển số cửa tiếp theo…'
                 ]
             };
-            const steps = loadingTexts[uiLang] || loadingTexts.zh;
+            const steps = loadingTexts[uiLang] || loadingTexts.vi || loadingTexts.en;
             const emojis = ['🦞','🦀','🦐','🦑','🐙','🐟','🐠','🐡','🦪','🍣','🍤','🍱','🍲','🍜','🍝','🌊','🐚','🪸'];
 
             roomLoadingIndex = 0;
@@ -3954,9 +3948,9 @@ function toggleBrokerPanel() {
                                         ja: [`${newAgent.name} さん、オフィスへようこそ！`,`Hi ${newAgent.name}、一緒に進めよう。`,`${newAgent.name} さんが参加しました、歓迎！`],
                                         vi: [`Chào mừng ${newAgent.name} đến văn phòng!`,`Hi ${newAgent.name}, cùng bắt tay vào làm thôi.`,`${newAgent.name} đã tham gia — chào mừng!`]
                                     };
-                                    const langPack = BUBBLE_TEXTS[lang] || BUBBLE_TEXTS.zh;
+                                    const langPack = BUBBLE_TEXTS[lang] || BUBBLE_TEXTS.vi || BUBBLE_TEXTS.en;
                                     const oldTexts = Array.isArray(langPack.writing) ? [...langPack.writing] : [];
-                                    langPack.writing = welcomeTexts[lang] || welcomeTexts.zh;
+                                    langPack.writing = welcomeTexts[lang] || welcomeTexts.vi || welcomeTexts.en;
                                     showBubble();
                                     // 还原
                                     langPack.writing = oldTexts;
@@ -4919,7 +4913,7 @@ function toggleBrokerPanel() {
         }
 
         function getBubbleTextsByState(stateKey) {
-            const langPack = BUBBLE_TEXTS[uiLang] || BUBBLE_TEXTS.zh;
+            const langPack = BUBBLE_TEXTS[uiLang] || BUBBLE_TEXTS.vi || BUBBLE_TEXTS.en;
             return langPack[stateKey] || langPack.idle || [];
         }
 
